@@ -24,7 +24,7 @@ base_url=https://github.com/PACCommunity/PAC/releases/download/v${version}
 tarball_name=PAC-v${version}-linux-x86_64.tar.gz
 binary_url=${base_url}/${tarball_name}
 
-export DEBIAN_FRONTEND=noninteractive
+DEBIAN_FRONTEND=noninteractive
 
 set -e
 
@@ -74,8 +74,9 @@ checkForUbuntuVersion() {
 updateAndUpgrade() {
     echo
     echo "[3/${MAX}] Runing update and upgrade. Please wait..."
-    apt-get update -qq -y > /dev/null 2>&1
-    apt-get upgrade -y -qq > /dev/null 2>&1
+    export $DEBIAN_FRONTEND
+    apt-get update -y #> /dev/null 2>&1
+    apt-get upgrade -y  #> /dev/null 2>&1
     echo -e "${GREEN}* Done${NONE}";
 }
 
