@@ -149,14 +149,14 @@ installSentinel() {
 configureWallet() {
     echo
     echo -e "[9/${MAX}] Configuring wallet. Please wait..."
-    $COINDAEMON -daemon > /dev/null 2>&1
+    $COINDAEMON -daemon #> /dev/null 2>&1
     sleep 10
 
     MNIP=$(curl --silent ipinfo.io/ip)
     RPCUSER=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
     RPCPASS=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
 
-    $COINCLI stop > /dev/null 2>&1
+    $COINCLI stop #> /dev/null 2>&1
     sleep 10
 
     cd ~/.paccoincore
