@@ -38,6 +38,27 @@ else
     is_testnet=0
 fi
 
+echoRed() {
+  echo -e "\E[1;31m$1"
+  echo -e '\e[0m'
+}
+
+echoGreen() {
+  echo -e "\E[1;32m$1"
+  echo -e '\e[0m'
+}
+
+echoCyan() {
+  echo -e "\E[1;36m$1"
+  echo -e '\e[0m'
+}
+
+echoMagenta() {
+  echo -e "\E[1;35m$1"
+  echo -e '\e[0m'
+}
+
+
 check_errs() {
   # Function. Parameter 1 is the return code
   # Para. 2 is text to display on failure.
