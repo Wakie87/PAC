@@ -187,7 +187,7 @@ configureWallet() {
     echo "masternode=1" >> paccoin.conf
     echo "masternodeaddr=$MNIP:$COINPORT" >> paccoin.conf
     echo "masternodeprivkey=$mnkey" >> paccoin.conf
-    cd
+    cd ~/
     echo -e "${NONE}${GREEN}* Done${NONE}";
 
 }
