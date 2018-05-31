@@ -155,17 +155,24 @@ installSentinel() {
 configureWallet() {
     echo
     echo -e "[9/${MAX}] Configuring wallet. Please wait..."
-    $COINDAEMON -daemon #> /dev/null 2>&1
-    sleep 10
 
     MNIP=$(curl --silent ipinfo.io/ip)
     RPCUSER=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
     RPCPASS=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
 
-    $COINCLI stop #> /dev/null 2>&1
-    sleep 10
+    if [ -d ~/.paccoincore ]; then
+        if [ -e ~/.paccoincore/paccoin.conf ]; then      
+                sudo rm ~/.paccoincore/paccoin.conf
+                touch ~/.paccoincore/paccoin.conf
+                cd ~/.paccoincore
+        fi
+    else
+        echo "Creating .paccoincore dir"
+        mkdir -p ~/.paccoincore
+        cd ~/.paccoincore
+        touch paccoin.conf
+    fi
 
-    cd ~/.paccoincore
     echo "Configuring the paccoin.conf"
     echo "rpcuser=$RPCUSER" > paccoin.conf
     echo "rpcpassword=$RPCPASS" >> paccoin.conf
