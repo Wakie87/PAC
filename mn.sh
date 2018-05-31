@@ -39,16 +39,22 @@ fi
 
 setupSwap() {
     echo && echo -e "${NONE}[3/${MAX}] Adding swap space...${YELLOW}"
-    sudo fallocate -l 4G /swapfile
-    sleep 2
-    sudo chmod 600 /swapfile
-    sudo mkswap /swapfile
-    sudo swapon /swapfile
-    echo -e "/swapfile none swap sw 0 0" | sudo tee -a /etc/fstab > /dev/null 2>&1
-    sudo sysctl vm.swappiness=10
-    sudo sysctl vm.vfs_cache_pressure=50
-    echo -e "vm.swappiness=10" | sudo tee -a /etc/sysctl.conf > /dev/null 2>&1
-    echo -e "vm.vfs_cache_pressure=50" | sudo tee -a /etc/sysctl.conf > /dev/null 2>&1
+
+    if [ "$(swapon -s | wc -l)" -gt "1" ]; then
+        printf "%s\\n" 'Swapfile found. No changes made.'
+        swapon -s
+    else
+        sudo fallocate -l 4G /swapfile
+        sleep 2
+        sudo chmod 600 /swapfile
+        sudo mkswap /swapfile
+        sudo swapon /swapfile
+        echo -e "/swapfile none swap sw 0 0" | sudo tee -a /etc/fstab > /dev/null 2>&1
+        sudo sysctl vm.swappiness=10
+        sudo sysctl vm.vfs_cache_pressure=50
+        echo -e "vm.swappiness=10" | sudo tee -a /etc/sysctl.conf > /dev/null 2>&1
+        echo -e "vm.vfs_cache_pressure=50" | sudo tee -a /etc/sysctl.conf > /dev/null 2>&1
+    fi
     echo -e "${NONE}${GREEN}* Done${NONE}";
 }
 
