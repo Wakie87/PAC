@@ -24,8 +24,9 @@ base_url=https://github.com/PACCommunity/PAC/releases/download/v${version}
 tarball_name=PAC-v${version}-linux-x86_64.tar.gz
 binary_url=${base_url}/${tarball_name}
 
-set -e
+export DEBIAN_FRONTEND=noninteractive
 
+set -e
 
 if [ "$1" == "--testnet" ]; then
     COINRPCPORT=17111
@@ -73,39 +74,8 @@ checkForUbuntuVersion() {
 updateAndUpgrade() {
     echo
     echo "[3/${MAX}] Runing update and upgrade. Please wait..."
-    UPGRADE_ATTEMPT_COUNT=100
-	UPGRADE_STATE=1
-	for i in `seq 1 $UPGRADE_ATTEMPT_COUNT`;
-	do
-	    if [ "$UPGRADE_STATE" -eq "1" ]; then
-		apt-get -y update
-		if [ "`echo $?`" -eq "0" ]; then
-		    echo "package list updated."
-		    UPGRADE_STATE=2;
-		fi
-	    fi
-
-	    if [ "$UPGRADE_STATE" -eq "2" ]; then
-		apt-get -y upgrade
-		if [ "`echo $?`" -eq "0" ]; then
-		    echo "packages updated."
-		    UPGRADE_STATE=3;
-		fi
-	    fi
-
-	    if [ "$UPGRADE_STATE" -eq "3" ]; then
-		break
-	    fi
-
-	    sleep 5
-	done
-
-	if [ "$UPGRADE_STATE" -ne "3" ]; then
-	    echo "ERROR: packages failed to update after $UPGRADE_ATTEMPT_COUNT attempts."
-	fi
-    
-    #sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq -y > /dev/null 2>&1
-    #sudo DEBIAN_FRONTEND=noninteractive apt-get upgrade -y -qq > /dev/null 2>&1
+    apt-get update -qq -y > /dev/null 2>&1
+    apt-get upgrade -y -qq > /dev/null 2>&1
     echo -e "${GREEN}* Done${NONE}";
 }
 
