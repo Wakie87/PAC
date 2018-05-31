@@ -12,8 +12,8 @@ MAX=12
 
 
 SENTINELGITHUB=https://github.com/PACCommunity/sentinel
-COINDAEMON=./paccoind
-COINCLI=./paccoin-cli
+COINDAEMON='./paccoind'
+COINCLI='./paccoin-cli'
 COINCORE=.paccoincore
 COINCONFIG=paccoin.conf
 
@@ -196,7 +196,7 @@ configureWallet() {
 startWallet() {
     echo
     echo -e "[11/${MAX}] Starting wallet daemon..."
-    $COINDAEMON -daemon > /dev/null 2>&1
+    ${COINDAEMON} -daemon > /dev/null 2>&1
     sleep 5
     echo -e "${GREEN}* Done${NONE}";
 }
