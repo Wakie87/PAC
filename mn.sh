@@ -24,7 +24,7 @@ base_url=https://github.com/PACCommunity/PAC/releases/download/v${version}
 tarball_name=PAC-v${version}-linux-x86_64.tar.gz
 binary_url=${base_url}/${tarball_name}
 
-DEBIAN_FRONTEND=noninteractive
+export DEBIAN_FRONTEND=noninteractive
 
 set -e
 
@@ -37,6 +37,22 @@ else
     COINPORT=7112
     is_testnet=0
 fi
+
+check_errs() {
+  # Function. Parameter 1 is the return code
+  # Para. 2 is text to display on failure.
+      if [ "${1}" -ne "0" ]; then
+        echoRed "ERROR # ${1} : ${2}"
+        # as a bonus, make our script exit with the right error code.
+        if [ "$#" -eq 3 ]; then
+          echoCyan "cleaning file from failed script attempt "
+          rm -f ${3}
+          check_errs $? "Failed to remove file - ${3}"
+        fi
+
+        exit ${1}
+      fi
+}
 
 setupSwap() {
     echo && echo -e "${NONE}[1/${MAX}] Adding swap space...${YELLOW}"
@@ -74,9 +90,15 @@ checkForUbuntuVersion() {
 updateAndUpgrade() {
     echo
     echo "[3/${MAX}] Runing update and upgrade. Please wait..."
-    export $DEBIAN_FRONTEND
-    apt-get update -y #> /dev/null 2>&1
-    apt-get upgrade -y  #> /dev/null 2>&1
+	
+ 	apt-get --yes --force-yes update
+	check_errs $? "Failed to apt-get update"
+
+	apt-get --yes --force-yes upgrade
+	check_errs $? "Failed to apt-get upgrade"
+	
+    #apt-get update -y #> /dev/null 2>&1
+    #apt-get upgrade -y  #> /dev/null 2>&1
     echo -e "${GREEN}* Done${NONE}";
 }
 
