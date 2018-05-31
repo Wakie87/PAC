@@ -196,7 +196,7 @@ configureWallet() {
 startWallet() {
     echo
     echo -e "[11/${MAX}] Starting wallet daemon..."
-    $COINDAEMON -daemon > /dev/null 2>&1
+    $COINDAEMON -daemon
     sleep 5
     echo -e "${GREEN}* Done${NONE}";
 }
