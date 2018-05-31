@@ -24,7 +24,7 @@ base_url=https://github.com/PACCommunity/PAC/releases/download/v${version}
 tarball_name=PAC-v${version}-linux-x86_64.tar.gz
 binary_url=${base_url}/${tarball_name}
 
-export DEBIAN_FRONTEND=noninteractive
+DEBIAN_FRONTEND=noninteractive
 
 set -e
 
@@ -56,7 +56,8 @@ check_errs() {
 
 setupSwap() {
     echo && echo -e "${NONE}[1/${MAX}] Adding swap space...${YELLOW}"
-
+	printf "\n\nCreating and turning on SWAP" > /dev/tty1
+	
     if [ "$(swapon -s | wc -l)" -gt "1" ]; then
         printf "%s\\n" 'Swapfile found. No changes made.'
         swapon -s
@@ -91,11 +92,8 @@ updateAndUpgrade() {
     echo
     echo "[3/${MAX}] Runing update and upgrade. Please wait..."
 	
- 	apt-get --yes --force-yes update
+ 	sudo apt-get update && sudo apt-get upgrade -y
 	check_errs $? "Failed to apt-get update"
-
-	apt-get --yes --force-yes upgrade
-	check_errs $? "Failed to apt-get upgrade"
 	
     #apt-get update -y #> /dev/null 2>&1
     #apt-get upgrade -y  #> /dev/null 2>&1
