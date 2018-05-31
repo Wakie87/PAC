@@ -261,7 +261,7 @@ syncWallet() {
 
 	setupSwap
 	checkForUbuntuVersion
-	updateAndUpgrade
+	#updateAndUpgrade
 	installFail2Ban
 	installFirewall
 	installDependencies
