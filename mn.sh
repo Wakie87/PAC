@@ -184,9 +184,9 @@ configureWallet() {
     echo "daemon=1" >> paccoin.conf
     echo "listen=1" >> paccoin.conf
     echo "testnet=$is_testnet" >> paccoin.conf
-    echo "masternode=1" >> paccoin.conf
-    echo "masternodeaddr=$MNIP:$COINPORT" >> paccoin.conf
-    echo "masternodeprivkey=$mnkey" >> paccoin.conf
+    # echo "masternode=1" >> paccoin.conf
+    # echo "masternodeaddr=$MNIP:$COINPORT" >> paccoin.conf
+    # echo "masternodeprivkey=$mnkey" >> paccoin.conf
     cd ~/
     echo -e "${NONE}${GREEN}* Done${NONE}";
 
@@ -196,7 +196,7 @@ configureWallet() {
 startWallet() {
     echo
     echo -e "[11/${MAX}] Starting wallet daemon..."
-    ${COINDAEMON} -daemon > /dev/null 2>&1
+    $COINDAEMON -daemon > /dev/null 2>&1
     sleep 5
     echo -e "${GREEN}* Done${NONE}";
 }
