@@ -8,7 +8,7 @@ CYAN='\033[01;36m'
 WHITE='\033[01;37m'
 BOLD='\033[1m'
 UNDERLINE='\033[4m'
-MAX=12
+MAX=11
 
 
 SENTINELGITHUB=https://github.com/PACCommunity/sentinel
@@ -38,7 +38,7 @@ else
 fi
 
 setupSwap() {
-    echo && echo -e "${NONE}[3/${MAX}] Adding swap space...${YELLOW}"
+    echo && echo -e "${NONE}[1/${MAX}] Adding swap space...${YELLOW}"
 
     if [ "$(swapon -s | wc -l)" -gt "1" ]; then
         printf "%s\\n" 'Swapfile found. No changes made.'
@@ -60,7 +60,7 @@ setupSwap() {
 
 
 checkForUbuntuVersion() {
-   echo "[1/${MAX}] Checking Ubuntu version..."
+   echo "[2/${MAX}] Checking Ubuntu version..."
     if [[ `cat /etc/issue.net`  == *16.04* ]]; then
         echo -e "${GREEN}* You are running `cat /etc/issue.net` . Setup will continue.${NONE}";
     else
@@ -72,7 +72,7 @@ checkForUbuntuVersion() {
 
 updateAndUpgrade() {
     echo
-    echo "[2/${MAX}] Runing update and upgrade. Please wait..."
+    echo "[3/${MAX}] Runing update and upgrade. Please wait..."
     sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq -y > /dev/null 2>&1
     sudo DEBIAN_FRONTEND=noninteractive apt-get upgrade -y -qq > /dev/null 2>&1
     echo -e "${GREEN}* Done${NONE}";
@@ -81,7 +81,7 @@ updateAndUpgrade() {
 
 installDependencies() {
     echo
-    echo -e "[6/${MAX}] Installing dependecies. Please wait..."
+    echo -e "[4/${MAX}] Installing dependecies. Please wait..."
     sudo apt-get install screen curl pwgen apache2 php libapache2-mod-php php-mcrypt php-mysql -qq -y > /dev/null 2>&1
     sudo apt-get install git nano rpl wget python-virtualenv -qq -y > /dev/null 2>&1
     sudo apt-get install build-essential libtool automake autoconf -qq -y > /dev/null 2>&1
@@ -99,7 +99,7 @@ installDependencies() {
 
 installFail2Ban() {
     echo
-    echo -e "[4/${MAX}] Installing fail2ban. Please wait..."
+    echo -e "[5/${MAX}] Installing fail2ban. Please wait..."
     sudo apt-get -y install fail2ban > /dev/null 2>&1
     sudo systemctl enable fail2ban > /dev/null 2>&1
     sudo systemctl start fail2ban > /dev/null 2>&1
@@ -108,7 +108,7 @@ installFail2Ban() {
 
 installFirewall() {
     echo
-    echo -e "[5/${MAX}] Installing UFW. Please wait..."
+    echo -e "[6/${MAX}] Installing UFW. Please wait..."
     sudo apt-get -y install ufw > /dev/null 2>&1
     sudo ufw default deny incoming > /dev/null 2>&1
     sudo ufw default allow outgoing > /dev/null 2>&1
@@ -123,7 +123,7 @@ installFirewall() {
 
 installWallet() {
     echo
-    echo -e "[8/${MAX}] Installing wallet. Please wait..."
+    echo -e "[7/${MAX}] Installing wallet. Please wait..."
     if test -e "${tarball_name}"; then
         sudo rm -r $tarball_name
     fi
@@ -139,7 +139,7 @@ installWallet() {
 
 installSentinel() {
     echo
-    echo -e "[10/${MAX}] Installing Sentinel...${YELLOW}"
+    echo -e "[8/${MAX}] Installing Sentinel...${YELLOW}"
     git clone $SENTINELGITHUB sentinel > /dev/null 2>&1
     cd sentinel
     export LC_ALL=C > /dev/null 2>&1
@@ -187,7 +187,7 @@ configureWallet() {
     # echo "masternode=1" >> paccoin.conf
     # echo "masternodeaddr=$MNIP:$COINPORT" >> paccoin.conf
     # echo "masternodeprivkey=$mnkey" >> paccoin.conf
-    cd ~/
+    
     echo -e "${NONE}${GREEN}* Done${NONE}";
 
 }
@@ -195,15 +195,16 @@ configureWallet() {
 
 startWallet() {
     echo
-    echo -e "[11/${MAX}] Starting wallet daemon..."
-    $COINDAEMON -daemon
+    echo -e "[10/${MAX}] Starting wallet daemon..."
+    cd ~/
+    ${COINDAEMON} -daemon
     sleep 5
     echo -e "${GREEN}* Done${NONE}";
 }
 
 syncWallet() {
     echo
-    echo "[12/${MAX}] Waiting for wallet to sync. It will take a while, you can go grab a coffee :)"
+    echo "[11/${MAX}] Waiting for wallet to sync. It will take a while, you can go grab a coffee :)"
     until $COINCLI mnsync status | grep -m 1 '"IsBlockchainSynced": true'; do sleep 1 ; done > /dev/null 2>&1
     echo -e "${GREEN}* Blockchain Synced${NONE}";
     until $COINCLI mnsync status | grep -m 1 '"IsMasternodeListSynced": true'; do sleep 1 ; done > /dev/null 2>&1
@@ -215,14 +216,14 @@ syncWallet() {
 }
 
 
-    setupSwap
-    checkForUbuntuVersion
-    updateAndUpgrade
-    installFail2Ban
-    installFirewall
-    installDependencies
-    installWallet
-    configureWallet
-    installSentinel
-    startWallet
-    syncWallet
+	setupSwap
+	checkForUbuntuVersion
+	updateAndUpgrade
+	installFail2Ban
+	installFirewall
+	installDependencies
+	installWallet
+	configureWallet
+	installSentinel
+	startWallet
+	syncWallet
