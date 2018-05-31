@@ -1,5 +1,4 @@
 #!/bin/bash
-
 NONE='\033[00m'
 RED='\033[01;31m'
 GREEN='\033[01;32m'
@@ -25,6 +24,8 @@ base_url=https://github.com/PACCommunity/PAC/releases/download/v${version}
 tarball_name=PAC-v${version}-linux-x86_64.tar.gz
 binary_url=${base_url}/${tarball_name}
 
+set -e
+
 
 if [ "$1" == "--testnet" ]; then
     COINRPCPORT=17111
@@ -38,7 +39,7 @@ fi
 
 setupSwap() {
     echo && echo -e "${NONE}[3/${MAX}] Adding swap space...${YELLOW}"
-    sudo fallocate -l $swap_size /swapfile
+    sudo fallocate -l 4G /swapfile
     sleep 2
     sudo chmod 600 /swapfile
     sudo mkswap /swapfile
@@ -158,10 +159,10 @@ configureWallet() {
     $COINCLI stop > /dev/null 2>&1
     sleep 10
 
-
+    cd ~/.paccoincore
     echo "Configuring the paccoin.conf"
     echo "rpcuser=$RPCUSER" > paccoin.conf
-    echo "rpcpassword=RPCPASS" >> paccoin.conf
+    echo "rpcpassword=$RPCPASS" >> paccoin.conf
     echo "rpcallowip=127.0.0.1" >> paccoin.conf
     echo "rpcport=$COINRPCPORT" >> paccoin.conf
     echo "externalip=$MNIP" >> paccoin.conf
@@ -173,7 +174,9 @@ configureWallet() {
     echo "masternode=1" >> paccoin.conf
     echo "masternodeaddr=$MNIP:$COINPORT" >> paccoin.conf
     echo "masternodeprivkey=$mnkey" >> paccoin.conf
+    cd
     echo -e "${NONE}${GREEN}* Done${NONE}";
+
 }
 
 
@@ -197,8 +200,6 @@ syncWallet() {
     until $COINCLI mnsync status | grep -m 1 '"IsSynced": true'; do sleep 1 ; done > /dev/null 2>&1
     echo -e "${GREEN}* Done reindexing wallet${NONE}";
 }
-
-
 
 
     setupSwap
