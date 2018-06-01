@@ -202,9 +202,9 @@ configureWallet() {
     echo "Getting IP"
     MNIP=$(curl -s ipinfo.io/ip)
     echo "Getting user"
-    RPCUSER=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
+    RPCUSER='cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1'
     echo "getting pass"
-    RPCPASS=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
+    RPCPASS='cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1'
 
     echo "Configuring the paccoin.conf"
     echo "rpcuser=${RPCUSER}" > paccoin.conf
