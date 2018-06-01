@@ -178,9 +178,9 @@ installWallet() {
 installSentinel() {
     echo
     echo -e "[8/${MAX}] Installing Sentinel...${YELLOW}"
+    cd ~/
     git clone $SENTINELGITHUB sentinel > /dev/null 2>&1
     cd sentinel
-    export LC_ALL=C > /dev/null 2>&1
     virtualenv ./venv > /dev/null 2>&1
     ./venv/bin/pip install -r requirements.txt > /dev/null 2>&1
     venv/bin/python bin/sentinel.py > /dev/null 2>&1
@@ -202,9 +202,9 @@ configureWallet() {
     echo "Getting IP"
     MNIP=$(curl -s ipinfo.io/ip)
     echo "Getting user"
-    RPCUSER='cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1'
+    RPCUSER=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
     echo "getting pass"
-    RPCPASS='cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1'
+    RPCPASS=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
 
     echo "Configuring the paccoin.conf"
     echo "rpcuser=${RPCUSER}" > paccoin.conf
