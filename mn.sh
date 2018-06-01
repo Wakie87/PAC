@@ -12,7 +12,7 @@ MAX=11
 
 
 SENTINELGITHUB=https://github.com/PACCommunity/sentinel
-COINDAEMON='./paccoind'
+COINDAEMON=./paccoind
 COINCLI='./paccoin-cli'
 COINCORE=.paccoincore
 COINCONFIG=paccoin.conf
@@ -222,6 +222,18 @@ configureWallet() {
     # echo "masternodeprivkey=$mnkey" >> paccoin.conf
     
     echo -e "${NONE}${GREEN}* Done${NONE}";
+	
+    echo
+    echo -e "[10/${MAX}] Starting wallet daemon..."
+    cd ~/
+	./paccoind
+	sleep 60
+
+	is_pac_running=`ps ax | grep -v grep | grep paccoind | wc -l`
+	if [ $is_pac_running -eq 0 ]; then
+		echo "The daemon is not running or there is an issue, please restart the daemon!"
+		exit
+	fi
 
 }
 
@@ -257,6 +269,6 @@ syncWallet() {
     installDependencies
     installWallet
     configureWallet
-    startWallet
+    #startWallet
     installSentinel
     syncWallet
