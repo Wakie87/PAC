@@ -194,21 +194,16 @@ configureWallet() {
     echo
     echo -e "[9/${MAX}] Configuring wallet. Please wait..."
 
-    if [ -d ~/.paccoincore ]; then
-        if [ -e ~/.paccoincore/paccoin.conf ]; then      
-                sudo rm ~/.paccoincore/paccoin.conf
-                touch ~/.paccoincore/paccoin.conf
-                cd ~/.paccoincore
-        fi
-    else
-        echo "Creating .paccoincore dir"
-        mkdir -p ~/.paccoincore
-        cd ~/.paccoincore
-        touch paccoin.conf
-    fi
+    echo "Creating .paccoincore dir"
+    mkdir -p ~/.paccoincore
+    cd ~/.paccoincore
+    touch paccoin.conf
 
-    MNIP=$(curl --silent ipinfo.io/ip)
+    echo "Getting IP"
+    MNIP=$(curl -s ipinfo.io/ip)
+    echo "Getting user"
     RPCUSER=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
+    echo "getting pass"
     RPCPASS=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
 
     echo "Configuring the paccoin.conf"
