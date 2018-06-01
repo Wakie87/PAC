@@ -179,7 +179,7 @@ installSentinel() {
     echo
     echo -e "[8/${MAX}] Installing Sentinel...${YELLOW}"
     cd ~/
-    git clone $SENTINELGITHUB sentinel > /dev/null 2>&1
+    git clone $SENTINELGITHUB > /dev/null 2>&1
     cd sentinel
     virtualenv ./venv > /dev/null 2>&1
     ./venv/bin/pip install -r requirements.txt > /dev/null 2>&1
