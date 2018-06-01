@@ -231,7 +231,7 @@ startWallet() {
     echo -e "[10/${MAX}] Starting wallet daemon..."
     cd ~/
     ${COINDAEMON} -daemon
-    sleep 5
+    sleep 60
     echo -e "${GREEN}* Done${NONE}";
 }
 
@@ -257,6 +257,6 @@ syncWallet() {
     installDependencies
     installWallet
     configureWallet
-    installSentinel
     startWallet
+    installSentinel
     syncWallet
