@@ -112,12 +112,7 @@ checkForUbuntuVersion() {
 updateAndUpgrade() {
     echo
     echo "[3/${MAX}] Runing update and upgrade. Please wait..."
-	
- 	sudo apt-get update && sudo apt-get upgrade -y
-	check_errs $? "Failed to apt-get update"
-	
-    #apt-get update -y #> /dev/null 2>&1
-    #apt-get upgrade -y  #> /dev/null 2>&1
+    sudo apt-get update && apt-get upgrade -qq -y > /dev/null 2>&1
     echo -e "${GREEN}* Done${NONE}";
 }
 
@@ -261,7 +256,7 @@ syncWallet() {
 
 	setupSwap
 	checkForUbuntuVersion
-	#updateAndUpgrade
+	updateAndUpgrade
 	installFail2Ban
 	installFirewall
 	installDependencies
