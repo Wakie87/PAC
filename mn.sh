@@ -77,8 +77,8 @@ check_errs() {
 
 setupSwap() {
     echo && echo -e "${NONE}[1/${MAX}] Adding swap space...${YELLOW}"
-	printf "\n\nCreating and turning on SWAP" > /dev/tty1
-	
+    printf "\n\nCreating and turning on SWAP" > /dev/tty1
+    
     if [ "$(swapon -s | wc -l)" -gt "1" ]; then
         printf "%s\\n" 'Swapfile found. No changes made.'
         swapon -s
@@ -194,10 +194,6 @@ configureWallet() {
     echo
     echo -e "[9/${MAX}] Configuring wallet. Please wait..."
 
-    MNIP=$(curl --silent ipinfo.io/ip)
-    RPCUSER=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
-    RPCPASS=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
-
     if [ -d ~/.paccoincore ]; then
         if [ -e ~/.paccoincore/paccoin.conf ]; then      
                 sudo rm ~/.paccoincore/paccoin.conf
@@ -211,17 +207,21 @@ configureWallet() {
         touch paccoin.conf
     fi
 
+    MNIP=$(curl --silent ipinfo.io/ip)
+    RPCUSER=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
+    RPCPASS=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
+
     echo "Configuring the paccoin.conf"
-    echo "rpcuser=$RPCUSER" > paccoin.conf
-    echo "rpcpassword=$RPCPASS" >> paccoin.conf
+    echo "rpcuser=${RPCUSER}" > paccoin.conf
+    echo "rpcpassword=${RPCPASS}" >> paccoin.conf
     echo "rpcallowip=127.0.0.1" >> paccoin.conf
-    echo "rpcport=$COINRPCPORT" >> paccoin.conf
-    echo "externalip=$MNIP" >> paccoin.conf
-    echo "port=$COINPORT" >> paccoin.conf
+    echo "rpcport=${COINRPCPORT}" >> paccoin.conf
+    echo "externalip=${MNIP}" >> paccoin.conf
+    echo "port=${COINPORT}" >> paccoin.conf
     echo "server=1" >> paccoin.conf
     echo "daemon=1" >> paccoin.conf
     echo "listen=1" >> paccoin.conf
-    echo "testnet=$is_testnet" >> paccoin.conf
+    echo "testnet=${is_testnet}" >> paccoin.conf
     # echo "masternode=1" >> paccoin.conf
     # echo "masternodeaddr=$MNIP:$COINPORT" >> paccoin.conf
     # echo "masternodeprivkey=$mnkey" >> paccoin.conf
@@ -254,14 +254,14 @@ syncWallet() {
 }
 
 
-	setupSwap
-	checkForUbuntuVersion
-	updateAndUpgrade
-	installFail2Ban
-	installFirewall
-	installDependencies
-	installWallet
-	configureWallet
-	installSentinel
-	startWallet
-	syncWallet
+    setupSwap
+    checkForUbuntuVersion
+    updateAndUpgrade
+    installFail2Ban
+    installFirewall
+    installDependencies
+    installWallet
+    configureWallet
+    installSentinel
+    startWallet
+    syncWallet
