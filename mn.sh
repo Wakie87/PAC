@@ -12,7 +12,7 @@ MAX=11
 
 
 SENTINELGITHUB=https://github.com/PACCommunity/sentinel
-COINDAEMON=./paccoind
+COINDAEMON='./paccoind'
 COINCLI='./paccoin-cli'
 COINCORE=.paccoincore
 COINCONFIG=paccoin.conf
@@ -226,16 +226,8 @@ configureWallet() {
     echo
     echo -e "[10/${MAX}] Starting wallet daemon..."
     cd ~/
-    pkill -9 -f paccoind
-	./paccoind 
-	sleep 60
-	echo -e "[10/${MAX}] wallet daemon started..."
-	is_pac_running=`ps ax | grep -v grep | grep paccoind | wc -l`
-	if [ $is_pac_running -eq 0 ]; then
-		echo "The daemon is not running or there is an issue, please restart the daemon!"
-		exit
-	fi
-	echo -e "${GREEN}* wallet daemon started...${NONE}";
+    sudo pkill -9 -f paccoind
+	echo -e "${GREEN}* Done${NONE}";
 
 }
 
@@ -244,7 +236,7 @@ startWallet() {
     echo
     echo -e "[10/${MAX}] Starting wallet daemon..."
     cd ~/
-    ${COINDAEMON} -daemon -datadir=/root/.paccoincore
+    $COINDAEMON -daemon -datadir=/root/.paccoincore
     sleep 60
     echo -e "${GREEN}* Done${NONE}";
 }
