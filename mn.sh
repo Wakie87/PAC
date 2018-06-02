@@ -226,14 +226,16 @@ configureWallet() {
     echo
     echo -e "[10/${MAX}] Starting wallet daemon..."
     cd ~/
-	./paccoind
+    pkill -9 -f paccoind
+	./paccoind 
 	sleep 60
-
+	echo -e "[10/${MAX}] wallet daemon started..."
 	is_pac_running=`ps ax | grep -v grep | grep paccoind | wc -l`
 	if [ $is_pac_running -eq 0 ]; then
 		echo "The daemon is not running or there is an issue, please restart the daemon!"
 		exit
 	fi
+	echo -e "${GREEN}* wallet daemon started...${NONE}";
 
 }
 
@@ -242,7 +244,7 @@ startWallet() {
     echo
     echo -e "[10/${MAX}] Starting wallet daemon..."
     cd ~/
-    ${COINDAEMON} -daemon
+    ${COINDAEMON} -daemon -datadir=/root/.paccoincore
     sleep 60
     echo -e "${GREEN}* Done${NONE}";
 }
