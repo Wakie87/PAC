@@ -5,14 +5,14 @@
 # These variables control the script's function. The only item you should change is the scrape address (the first variable, see above)
 #
 
-# Are you setting up a Ionode? if so you want to set these variables
-# Set varIonode to 1 if you want to run a node, otherwise set it to zero. 
+# Are you setting up a masternode? if so you want to set these variables
+# Set varPacMNnode to 1 if you want to run a masternode, otherwise set it to zero. 
 varPacMNode=0
 # This will set the external IP to your IP address (linux only), or you can put your IP address in here
 varPacMNodeExternalIP=$(curl -s ipinfo.io/ip)
-# This is your ionode private key. To get it run ion-cli ionode genkey
-varPacMNodePrivateKey=ReplaceMeWithOutputFrom_ion-cli_ionode_genkey
-# This is the label you want to give your ionode
+# This is your masternode private key. To get it run paccoin-cli masternode genkey
+varPacMNodePrivateKey=ReplaceMeWithOutputFrom_paccoin-cli_masternode_genkey
+# This is the label you want to give your masternode
 varPacMNodeLabel=""
 
 
@@ -35,6 +35,9 @@ tarball_name=PAC-v${version}-linux-x86_64.tar.gz
 binary_url=${base_url}/${tarball_name}
 SENTINELGITHUB=https://github.com/PACCommunity/sentinel
 
+varCoinRPCPort=7111
+varCoinPort=7112
+
 
 DEBIAN_FRONTEND=noninteractive
 
@@ -50,20 +53,16 @@ varQuickStartCompressedFileName=PAC-v${version}-linux-x86_64.tar.gz
 varQuickStartCompressedFilePathForDaemon=paccoind
 varQuickStartCompressedFilePathForCLI=paccoin-cli
 
+#Watchdog timer. Check every X min to see if we are still running. (5 min recommended)
+varWatchdogTime=5
+#Turn on or off the watchdog. default is true. 
+varWatchdogEnabled=true
+
 
 #Filenames of Generated Scripts
 PacStop="${varScriptsDirectory}pacStopPaccoind.sh"
 PacStart="${varScriptsDirectory}pacStart.sh"
-
-if [ "$1" == "--testnet" ]; then
-    COINRPCPORT=17111
-    COINPORT=17112
-    is_testnet=1
-else
-    COINRPCPORT=7111
-    COINPORT=7112
-    is_testnet=0
-fi
+PacWatchdog="${varScriptsDirectory}pacWatchdog.sh"
 
 
 
@@ -151,6 +150,19 @@ mkdir -pv $varScriptsDirectory
 mkdir -pv $varBackupDirectory
 
 
+echo "Setting up the Firewall"		
+sudo ufw status
+sudo ufw disable
+sudo ufw allow ssh/tcp
+sudo ufw limit ssh/tcp
+sudo ufw allow $varCoinPort/tcp
+sudo ufw logging on
+sudo ufw --force enable
+sudo ufw status
+
+sudo iptables -A INPUT -p tcp --dport $varCoinPort -j ACCEPT
+
+
 
 
 ### Script #1: Stop paccoind ###
@@ -163,8 +175,8 @@ echo "# This script is here to force stop or force kill paccoind" >> PacStopPacc
 echo "echo \"\$(date +%F_%T) Stopping the paccoind if it already running \"" >> PacStopPaccoind.sh
 echo "PID=\`ps -eaf | grep paccoind | grep -v grep | awk '{print \$2}'\`" >> PacStopPaccoind.sh
 echo "if [ \"\" !=  \"\$PID\" ]; then" >> PacStopPaccoind.sh
-echo "    if [ -e ${varPacBinaries}ion-cli ]; then"  >> PacStopPaccoind.sh
-echo "        sudo ${varPacBinaries}ion-cli stop" >> PacStopPaccoind.sh
+echo "    if [ -e ${varPacBinaries}paccoin-cli ]; then"  >> PacStopPaccoind.sh
+echo "        sudo ${varPacBinaries}paccoin-cli stop" >> PacStopPaccoind.sh
 echo "        echo \"\$(date +%F_%T) Stop sent, waiting 30 seconds\""  >> PacStopPaccoind.sh
 echo "        sleep 30" >> PacStopPaccoind.sh
 echo "    fi"  >> PacStopPaccoind.sh
@@ -208,6 +220,44 @@ PacStart="${varScriptsDirectory}PacStart.sh"
 echo "--"
 
 
+
+### Script #6: Watchdog, Checks to see if the process is running and restarts it if it is not. ###
+# Filename pacWatchdog.sh
+cd $varScriptsDirectory
+echo "Creating The Watchdog Script: pacWatchdog.sh"
+echo '#!/bin/sh' > pacWatchdog.sh
+echo "# This file, pacWatchdog.sh, was generated. $(date +%F_%T) Version: $varVersion" >> pacWatchdog.sh
+echo "# This script checks to see if paccoind is running. If it is not, then it will be restarted. " >> pacWatchdog.sh
+echo "PID=\`ps -eaf | grep paccoind | grep -v grep | awk '{print \$2}'\`" >> pacWatchdog.sh
+echo "if [ \"\" =  \"\$PID\" ]; then" >> pacWatchdog.sh
+echo "    if [ -e ${varPacBinaries}paccoin-cli ]; then"  >> pacWatchdog.sh
+echo "        echo \"\$(date +%F_%T) STOPPED: Wait 2 minutes. We could be in an auto-update or other momentary restart.\""  >> pacWatchdog.sh
+echo "        sleep 120" >> pacWatchdog.sh
+echo "        PID=\`ps -eaf | grep paccoind | grep -v grep | awk '{print \$2}'\`" >> pacWatchdog.sh
+echo "        if [ \"\" =  \"\$PID\" ]; then" >> pacWatchdog.sh
+echo "            echo \"\$(date +%F_%T) Starting: Attempting to start the paccoin daemon \""  >> pacWatchdog.sh
+echo "            sudo ${PacStart}" >> pacWatchdog.sh
+echo "            echo \"\$(date +%F_%T) Starting: Attempt complete. We will see if it worked the next watchdog round. \""  >> pacWatchdog.sh
+echo "            myVultrStatusInfo=\"Starting ...\""  >> pacWatchdog.sh
+echo "        else"  >> pacWatchdog.sh
+echo "            echo \"\$(date +%F_%T) Running: Must have been some reason it was down. \""  >> pacWatchdog.sh
+echo "            myVultrStatusInfo=\"Running ...\""  >> pacWatchdog.sh
+echo "        fi"  >> pacWatchdog.sh
+echo "    else"  >> pacWatchdog.sh
+echo "        echo \"\$(date +%F_%T) Error the file ${varPacBinaries}paccoin-cli does not exist! \""  >> pacWatchdog.sh
+echo "        myVultrStatusInfo=\"Error: paccoin-cli does not exist!\""  >> pacWatchdog.sh
+echo "    fi"  >> pacWatchdog.sh
+echo "else"  >> pacWatchdog.sh
+echo "    myBlockCount=\$(sudo ${varPacBinaries}paccoin-cli getblockcount)"  >> pacWatchdog.sh
+echo "    myHashesPerSec=\$(sudo ${varPacBinaries}paccoin-cli gethashespersec)"  >> pacWatchdog.sh
+#echo "    myNetworkDifficulty=\$(sudo ${varPacBinaries}paccoin-cli getdifficulty)"  >> pacWatchdog.sh
+echo "    myNetworkHPS=\$(sudo ${varPacBinaries}paccoin-cli getnetworkhashps)"  >> pacWatchdog.sh
+echo "    myVultrStatusInfo=\"\${myHashesPerSec} hps\""  >> pacWatchdog.sh
+echo "    echo \"\$(date +%F_%T) Running: Block Count: \$myBlockCount Hash Rate: \$myHashesPerSec Network HPS \$myNetworkHPS \""  >> pacWatchdog.sh
+echo "fi" >> pacWatchdog.sh
+
+
+
 echo "Done creating scripts"
 echo "-------------------------------------------"
 
@@ -234,8 +284,8 @@ funcCreatePacConfFile ()
  echo "rpcuser=$rpcuser" >> $varPacConfigFile
  echo "rpcpassword=$rpcpassword" >> $varPacConfigFile
  echo "rpcallowip=127.0.0.1" >> $varPacConfigFile
- echo "rpcport=7111" >> $varPacConfigFile
- echo "port=7112" >> $varPacConfigFile
+ echo "rpcport=$varCoinRPCPort" >> $varPacConfigFile
+ echo "port=$varCoinPort" >> $varPacConfigFile
  echo "externalip=$varPacMNodeExternalIP" >> $varPacConfigFile
  echo "server=1" >> $varPacConfigFile
  echo "daemon=1" >> $varPacConfigFile
@@ -264,54 +314,73 @@ funcCreatePacConfFile
 ## Quick Start (get binaries from the web, not completely safe or reliable, but fast!)
 if [ "$varQuickStart" = true ]; then
 
-echo "Beginning QuickStart Executable (binaries) download and start"
+	echo "Beginning QuickStart Executable (binaries) download and start"
 
-echo "If the paccoind process is running, this will kill it."
-sudo ${PacStop}
+	echo "If the paccoind process is running, this will kill it."
+	sudo ${PacStop}
 
-mkdir -pv ${varUserDirectory}QuickStart
-cd ${varUserDirectory}QuickStart
-echo "Downloading and extracting Pac binaries"
-rm -fdr $varQuickStartCompressedFileName
-echo "wget -o /dev/null $varQuickStartCompressedFileLocation"
-wget -o /dev/null $varQuickStartCompressedFileLocation
-tar -xvzf $varQuickStartCompressedFileName
+	mkdir -pv ${varUserDirectory}QuickStart
+	cd ${varUserDirectory}QuickStart
+	echo "Downloading and extracting Pac binaries"
+	rm -fdr $varQuickStartCompressedFileName
+	echo "wget -o /dev/null $varQuickStartCompressedFileLocation"
+	wget -o /dev/null $varQuickStartCompressedFileLocation
+	tar -xvzf $varQuickStartCompressedFileName
 
-echo "Copy QuickStart binaries"
-mkdir -pv $varPacBinaries
-sudo cp -v $varQuickStartCompressedFilePathForDaemon $varPacBinaries
-sudo cp -v $varQuickStartCompressedFilePathForCLI $varPacBinaries
-sudo cp -v $varQuickStartCompressedFilePathForDaemon /usr/local/bin
-sudo cp -v $varQuickStartCompressedFilePathForCLI /usr/local/bin
+	echo "Copy QuickStart binaries"
+	mkdir -pv $varPacBinaries
+	sudo cp -v $varQuickStartCompressedFilePathForDaemon $varPacBinaries
+	sudo cp -v $varQuickStartCompressedFilePathForCLI $varPacBinaries
+	sudo cp -v $varQuickStartCompressedFilePathForDaemon /usr/local/bin
+	sudo cp -v $varQuickStartCompressedFilePathForCLI /usr/local/bin
 
-echo "Launching daemon for the first time."
-echo "sudo ${varPacBinaries}paccoind --daemon"
-sudo ${varPacBinaries}paccoind --daemon
-sleep 60
+	echo "Launching daemon for the first time."
+	echo "sudo ${varPacBinaries}paccoind --daemon"
+	sudo ${varPacBinaries}paccoind --daemon
+	sleep 60
 
-is_pac_running=`ps ax | grep -v grep | grep paccoind | wc -l`
-if [ $is_pac_running -eq 0 ]; then
-	echo "The daemon is not running or there is an issue, please restart the daemon!"
-fi
+	is_pac_running=`ps ax | grep -v grep | grep paccoind | wc -l`
+	if [ $is_pac_running -eq 0 ]; then
+		echo "The daemon is not running or there is an issue, please restart the daemon!"
+	else
+		echo "The Daemon has started."
+	fi
 
-echo "The Daemon has started."
+
+	cd ~/
+	git clone $SENTINELGITHUB > /dev/null 2>&1
+	cd sentinel
+	virtualenv ./venv > /dev/null 2>&1
+	./venv/bin/pip install -r requirements.txt > /dev/null 2>&1
+	venv/bin/python bin/sentinel.py > /dev/null 2>&1
+	sleep 3
+	crontab 'crontab.txt'
+
+	sudo ${varPacBinaries}paccoin-cli getinfo
+
+	echo "Your PAC server is ready!"
 
 
-cd ~/
-git clone $SENTINELGITHUB > /dev/null 2>&1
-cd sentinel
-virtualenv ./venv > /dev/null 2>&1
-./venv/bin/pip install -r requirements.txt > /dev/null 2>&1
-venv/bin/python bin/sentinel.py > /dev/null 2>&1
-sleep 3
-crontab 'crontab.txt'
 
-sudo ${varPacBinaries}paccoin-cli getinfo
+	## CREATE CRON JOBS ###
+	echo "Creating Boot Start and Scrape Cron jobs..."
 
-echo "Your PAC server is ready!"
+	startLine="@reboot sh $PacStart >> ${varScriptsDirectory}PacStart.log 2>&1"
 
-echo "SCRIPT END"
+	(crontab -u root -l 2>/dev/null | grep -v -F "$PacStart"; echo "$startLine") | crontab -u root -
+	echo " cron job $PacStart is setup: $startLine"
 
-echo "QuickStart complete"
+	if [ "$varWatchdogEnabled" = true ]; then
+	    watchdogLine="*/$varWatchdogTime * * * * $PacWatchdog >> ${varScriptsDirectory}PacWatchdog.log 2>&1"
+	    (crontab -u root -l 2>/dev/null | grep -v -F "$PacWatchdog"; echo "$watchdogLine") | crontab -u root -
+		echo " cron job $PacWatchdog is setup: $watchdogLine"
+	fi
+
+	echo "Boot Start and Scrape cron jobs created"
+
+	echo "QuickStart complete"
 fi
 #End of QuickStart
+
+
+exit
