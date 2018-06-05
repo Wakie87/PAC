@@ -416,9 +416,11 @@ fi
 
     echo "${varPacBinaries}paccoin-cli getinfo >> ${varServicesDataDirectory}getinfo" >> ${varServicesDirectory}service.sh
     echo "${varPacBinaries}paccoin-cli getpeerinfo >> ${varServicesDataDirectory}getpeerinfo" >> ${varServicesDirectory}service.sh
-    echo "${varPacBinaries}paccoin-cli masternode status >> ${varServicesDataDirectory}masternode_status" >> ${varServicesDirectory}service.sh
     echo "${varPacBinaries}paccoin-cli masternode list full >> ${varServicesDataDirectory}masternode_list_full" >> ${varServicesDirectory}service.sh
-    echo "${varPacBinaries}paccoin-cli masternodelist rank >> ${varServicesDataDirectory}masternode_list_rank" >> ${varServicesDirectory}service.sh
+    echo "${varPacBinaries}paccoin-cli masternode list rank >> ${varServicesDataDirectory}masternode_list_rank" >> ${varServicesDirectory}service.sh
+    if [ "$varPacMNode" = 1 ]; then
+        echo "${varPacBinaries}paccoin-cli masternode status >> ${varServicesDataDirectory}masternode_status" >> ${varServicesDirectory}service.sh
+    fi
     chmod +x ${varServicesDirectory}service.sh
 
     echo 'screen -dmS monitor watch -n 1 wget -q --spider http://127.0.0.1/backend/cron.php' | sudo -E tee ${varServicesDirectory}monitor.sh >/dev/null 2>&1
@@ -430,7 +432,7 @@ fi
     }' | sudo -E tee ${varServicesDirectory}_serverinfo >/dev/null 2>&1
     chmod -f 777 ${varServicesDirectory}_serverinfo
 
-    echo ${INITIAL} >> _initial 
+    echo "${INITIAL}" >> ${varServicesDirectory}_initial 
     chmod -f 777 ${varServicesDirectory}_initial
 
     ${varServicesDirectory}monitor.sh
