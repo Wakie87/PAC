@@ -436,8 +436,8 @@ fi
     ${varServicesDirectory}monitor.sh
 
     echo "@reboot ${varServicesDirectory}monitor.sh
-    */1 * * * * ${varServicesDirectory}service.sh
-    */1 * * * * wget -q --spider http://127.0.0.1/backend/cron.php
-    */30 * * * * git --git-dir=/var/www/html/.git --work-tree=/var/www/html pull" | crontab -
+*/1 * * * * ${varServicesDirectory}service.sh
+*/1 * * * * wget -q --spider http://127.0.0.1/backend/cron.php
+*/30 * * * * git --git-dir=/var/www/html/.git --work-tree=/var/www/html pull" | crontab -
 
 sudo reboot
