@@ -9,7 +9,7 @@
 # Set varIonode to 1 if you want to run a node, otherwise set it to zero. 
 varPacMNode=0
 # This will set the external IP to your IP address (linux only), or you can put your IP address in here
-vaPacMNodeExternalIP=$(hostname -I)
+vaPacMNodeExternalIP=$(curl -s ipinfo.io/ip)
 # This is your ionode private key. To get it run ion-cli ionode genkey
 varPacMNodePrivateKey=ReplaceMeWithOutputFrom_ion-cli_ionode_genkey
 # This is the label you want to give your ionode
@@ -223,10 +223,10 @@ funcCreatePacConfFile ()
 
  sleep 1
  rpcuser=$(sudo tr -d -c "a-zA-Z0-9" < /dev/urandom | sudo head -c 34)
- echo "Myrpcuser=$Myrpcuser"
+ echo "rpcuser=$rpcuser"
  sleep 1
  rpcpassword=$(sudo tr -d -c "a-zA-Z0-9" < /dev/urandom | sudo head -c $(shuf -i 30-36 -n 1))
- echo "Myrpcpassword=$Myrpcpassword"
+ echo "rpcpassword=$rpcpassword"
  
  mkdir -pv $varPacConfigDirectory
  echo "# This file was generated. $(date +%F_%T)  Version: $varVersion" > $varPacConfigFile
@@ -251,13 +251,10 @@ funcCreatePacConfFile ()
  fi
 
  echo "# End of generated file" >> $varPacConfigFile
- echo "- Finished creating ion.conf"
+ echo "- Finished creating paccoin.conf"
  echo "---------------------------------"
  sleep 1
 }
-
-
-
 
 
 
@@ -266,6 +263,7 @@ funcCreatePacConfFile
 
 ## Quick Start (get binaries from the web, not completely safe or reliable, but fast!)
 if [ "$varQuickStart" = true ]; then
+
 echo "Beginning QuickStart Executable (binaries) download and start"
 
 echo "If the paccoind process is running, this will kill it."
@@ -295,6 +293,7 @@ is_pac_running=`ps ax | grep -v grep | grep paccoind | wc -l`
 if [ $is_pac_running -eq 0 ]; then
 	echo "The daemon is not running or there is an issue, please restart the daemon!"
 fi
+
 echo "The Daemon has started."
 
 
@@ -311,5 +310,8 @@ sudo ${varPacBinaries}paccoin-cli getinfo
 
 echo "Your PAC server is ready!"
 
-
 echo "SCRIPT END"
+
+echo "QuickStart complete"
+fi
+#End of QuickStart
