@@ -263,6 +263,6 @@ syncWallet() {
     installDependencies
     installWallet
     configureWallet
-    #startWallet
+    startWallet
     installSentinel
     syncWallet
