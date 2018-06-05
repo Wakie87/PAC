@@ -389,5 +389,4 @@ if [ "$varQuickStart" = true ]; then
 fi
 #End of QuickStart
 
-
-exit
+sudo reboot
