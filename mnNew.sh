@@ -359,7 +359,8 @@ if [ "$varQuickStart" = true ]; then
         echo "The Daemon has started."
     fi
 
-
+    echo "Installing Sentinal"
+    
     cd ~/
     git clone $SENTINELGITHUB > /dev/null 2>&1
     cd sentinel
