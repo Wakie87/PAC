@@ -238,21 +238,21 @@ echo "        if [ \"\" =  \"\$PID\" ]; then" >> pacWatchdog.sh
 echo "            echo \"\$(date +%F_%T) Starting: Attempting to start the paccoin daemon \""  >> pacWatchdog.sh
 echo "            sudo ${PacStart}" >> pacWatchdog.sh
 echo "            echo \"\$(date +%F_%T) Starting: Attempt complete. We will see if it worked the next watchdog round. \""  >> pacWatchdog.sh
-echo "            myVultrStatusInfo=\"Starting ...\""  >> pacWatchdog.sh
+#echo "            myVultrStatusInfo=\"Starting ...\""  >> pacWatchdog.sh
 echo "        else"  >> pacWatchdog.sh
 echo "            echo \"\$(date +%F_%T) Running: Must have been some reason it was down. \""  >> pacWatchdog.sh
-echo "            myVultrStatusInfo=\"Running ...\""  >> pacWatchdog.sh
+#echo "            myVultrStatusInfo=\"Running ...\""  >> pacWatchdog.sh
 echo "        fi"  >> pacWatchdog.sh
 echo "    else"  >> pacWatchdog.sh
 echo "        echo \"\$(date +%F_%T) Error the file ${varPacBinaries}paccoin-cli does not exist! \""  >> pacWatchdog.sh
-echo "        myVultrStatusInfo=\"Error: paccoin-cli does not exist!\""  >> pacWatchdog.sh
+#echo "        myVultrStatusInfo=\"Error: paccoin-cli does not exist!\""  >> pacWatchdog.sh
 echo "    fi"  >> pacWatchdog.sh
 echo "else"  >> pacWatchdog.sh
 echo "    myBlockCount=\$(sudo ${varPacBinaries}paccoin-cli getblockcount)"  >> pacWatchdog.sh
 echo "    myHashesPerSec=\$(sudo ${varPacBinaries}paccoin-cli gethashespersec)"  >> pacWatchdog.sh
 #echo "    myNetworkDifficulty=\$(sudo ${varPacBinaries}paccoin-cli getdifficulty)"  >> pacWatchdog.sh
 echo "    myNetworkHPS=\$(sudo ${varPacBinaries}paccoin-cli getnetworkhashps)"  >> pacWatchdog.sh
-echo "    myVultrStatusInfo=\"\${myHashesPerSec} hps\""  >> pacWatchdog.sh
+#echo "    myVultrStatusInfo=\"\${myHashesPerSec} hps\""  >> pacWatchdog.sh
 echo "    echo \"\$(date +%F_%T) Running: Block Count: \$myBlockCount Hash Rate: \$myHashesPerSec Network HPS \$myNetworkHPS \""  >> pacWatchdog.sh
 echo "fi" >> pacWatchdog.sh
 
@@ -370,7 +370,7 @@ if [ "$varQuickStart" = true ]; then
 
 
 	## CREATE CRON JOBS ###
-	echo "Creating Boot Start and Scrape Cron jobs..."
+	echo "Creating Boot Start Cron jobs..."
 
 	startLine="@reboot sh $PacStart >> ${varScriptsDirectory}PacStart.log 2>&1"
 
