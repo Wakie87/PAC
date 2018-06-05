@@ -256,6 +256,13 @@ echo "    myVultrStatusInfo=\"\${myHashesPerSec} hps\""  >> pacWatchdog.sh
 echo "    echo \"\$(date +%F_%T) Running: Block Count: \$myBlockCount Hash Rate: \$myHashesPerSec Network HPS \$myNetworkHPS \""  >> pacWatchdog.sh
 echo "fi" >> pacWatchdog.sh
 
+echo "# End of generated Script" >> pacWatchdog.sh
+echo "Changing the file attributes so we can run the script"
+chmod +x pacWatchdog.sh
+echo "Created pacWatchdog.sh"
+PacWatchdog="${varScriptsDirectory}pacWatchdog.sh"
+echo "--"
+
 
 
 echo "Done creating scripts"
