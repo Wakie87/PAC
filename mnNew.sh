@@ -9,7 +9,7 @@
 # Set varIonode to 1 if you want to run a node, otherwise set it to zero. 
 varPacMNode=0
 # This will set the external IP to your IP address (linux only), or you can put your IP address in here
-vaPacMNodeExternalIP=$(curl -s ipinfo.io/ip)
+varPacMNodeExternalIP=$(curl -s ipinfo.io/ip)
 # This is your ionode private key. To get it run ion-cli ionode genkey
 varPacMNodePrivateKey=ReplaceMeWithOutputFrom_ion-cli_ionode_genkey
 # This is the label you want to give your ionode
