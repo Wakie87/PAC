@@ -430,7 +430,7 @@ fi
     }' | sudo -E tee ${varServicesDirectory}_serverinfo >/dev/null 2>&1
     chmod -f 777 ${varServicesDirectory}_serverinfo
 
-    echo ${INITIAL} >>_initial 
+    echo ${INITIAL} >> _initial 
     chmod -f 777 ${varServicesDirectory}_initial
 
     ${varServicesDirectory}monitor.sh
