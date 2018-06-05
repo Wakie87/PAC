@@ -15,6 +15,8 @@ varPacMNodePrivateKey=ReplaceMeWithOutputFrom_paccoin-cli_masternode_genkey
 # This is the label you want to give your masternode
 varPacMNodeLabel=""
 
+INITIAL="1234"
+
 
 
 # Location of PAC Binaries, GIT Directories, and other useful files
@@ -22,6 +24,8 @@ varPacMNodeLabel=""
 varUserDirectory=/root/
 varPacBinaries="${varUserDirectory}Pac/bin/"
 varScriptsDirectory="${varUserDirectory}Pac/UserScripts/"
+varServicesDirectory="${varUserDirectory}Pac/services/"
+varServicesDataDirectory="${varServicesDirectory}data/"
 varPacConfigDirectory="${varUserDirectory}.paccoincore/"
 varPacConfigFile="${varUserDirectory}.paccoincore/paccoin.conf"
 varGITRootPath="${varUserDirectory}"
@@ -34,6 +38,7 @@ base_url=https://github.com/PACCommunity/PAC/releases/download/v${version}
 tarball_name=PAC-v${version}-linux-x86_64.tar.gz
 binary_url=${base_url}/${tarball_name}
 SENTINELGITHUB=https://github.com/PACCommunity/sentinel
+varServerName=$(cat /proc/sys/kernel/hostname)
 
 varCoinRPCPort=7111
 varCoinPort=7112
@@ -78,39 +83,39 @@ if [ "$varExpandSwapFile" = true ]; then
     # This will expand your swap file. It is not necessary if your VPS has more than 4G of ram, but it wont hurt to have
     echo "Expanding the swap file for optimization with low RAM VPS..."
     echo "sudo fallocate -l 4G /swapfile"
-	sudo fallocate -l 4G /swapfile
+    sudo fallocate -l 4G /swapfile
     echo "sudo chmod 600 /swapfile"
-	sudo chmod 600 /swapfile
-	echo "sudo mkswap /swapfile"
+    sudo chmod 600 /swapfile
+    echo "sudo mkswap /swapfile"
     sudo mkswap /swapfile
     echo "sudo swapon /swapfile"
-	sudo swapon /swapfile
+    sudo swapon /swapfile
 
     # the following command will append text to fstab to make sure your swap file stays there even after a reboot.
-	varSwapFileLine=$(cat /etc/fstab | grep "/swapfile none swap sw 0 0")
-	if [  "varSwapFileLine" = "" ]; then
-	    echo "Adding swap file line to /etc/fstab"
+    varSwapFileLine=$(cat /etc/fstab | grep "/swapfile none swap sw 0 0")
+    if [  "varSwapFileLine" = "" ]; then
+        echo "Adding swap file line to /etc/fstab"
         echo "/swapfile none swap sw 0 0" >> /etc/fstab
-	else
-	    echo "Swap file line is already in /etc/fstab"
-	fi
-    echo "Swap file expanded."	
-	
-	echo "Current Swap File Status:"
-	echo "sudo swapon -s"
-	sudo swapon -s
-	echo ""
-	echo "Let's check the memory"
-	echo "free -m"
-	free -m
-	echo ""
-	echo "Ok, now let's check the swapieness"
-	echo "cat /proc/sys/vm/swappiness"
-	cat /proc/sys/vm/swappiness
-	echo ""
-	echo "Desktops usually have a swapieness of 60 or so, VPS's are usually lower. It should not matter for this application. It is just a curiosity."
-	echo "End of Swap File expansion"
-	echo "-------------------------------------------"
+    else
+        echo "Swap file line is already in /etc/fstab"
+    fi
+    echo "Swap file expanded."  
+    
+    echo "Current Swap File Status:"
+    echo "sudo swapon -s"
+    sudo swapon -s
+    echo ""
+    echo "Let's check the memory"
+    echo "free -m"
+    free -m
+    echo ""
+    echo "Ok, now let's check the swapieness"
+    echo "cat /proc/sys/vm/swappiness"
+    cat /proc/sys/vm/swappiness
+    echo ""
+    echo "Desktops usually have a swapieness of 60 or so, VPS's are usually lower. It should not matter for this application. It is just a curiosity."
+    echo "End of Swap File expansion"
+    echo "-------------------------------------------"
 fi
 
 # Ensure that your system is up to date and fully patched
@@ -148,9 +153,10 @@ echo "Make the directories we are going to use"
 mkdir -pv $varPacBinaries
 mkdir -pv $varScriptsDirectory
 mkdir -pv $varBackupDirectory
+mkdir -pv $varServicesDataDirectory
 
 
-echo "Setting up the Firewall"		
+echo "Setting up the Firewall"      
 sudo ufw status
 sudo ufw disable
 sudo ufw allow ssh/tcp
@@ -249,11 +255,11 @@ echo "        echo \"\$(date +%F_%T) Error the file ${varPacBinaries}paccoin-cli
 echo "    fi"  >> pacWatchdog.sh
 echo "else"  >> pacWatchdog.sh
 echo "    myBlockCount=\$(sudo ${varPacBinaries}paccoin-cli getblockcount)"  >> pacWatchdog.sh
-echo "    myHashesPerSec=\$(sudo ${varPacBinaries}paccoin-cli gethashespersec)"  >> pacWatchdog.sh
-#echo "    myNetworkDifficulty=\$(sudo ${varPacBinaries}paccoin-cli getdifficulty)"  >> pacWatchdog.sh
+#echo "    myHashesPerSec=\$(sudo ${varPacBinaries}paccoin-cli gethashespersec)"  >> pacWatchdog.sh
+echo "    myNetworkDifficulty=\$(sudo ${varPacBinaries}paccoin-cli getdifficulty)"  >> pacWatchdog.sh
 echo "    myNetworkHPS=\$(sudo ${varPacBinaries}paccoin-cli getnetworkhashps)"  >> pacWatchdog.sh
 #echo "    myVultrStatusInfo=\"\${myHashesPerSec} hps\""  >> pacWatchdog.sh
-echo "    echo \"\$(date +%F_%T) Running: Block Count: \$myBlockCount Hash Rate: \$myHashesPerSec Network HPS \$myNetworkHPS \""  >> pacWatchdog.sh
+echo "    echo \"\$(date +%F_%T) Running: Block Count: \$myBlockCount Difficulty: \$mmyNetworkDifficulty Network HPS \$myNetworkHPS \""  >> pacWatchdog.sh
 echo "fi" >> pacWatchdog.sh
 
 echo "# End of generated Script" >> pacWatchdog.sh
@@ -321,72 +327,115 @@ funcCreatePacConfFile
 ## Quick Start (get binaries from the web, not completely safe or reliable, but fast!)
 if [ "$varQuickStart" = true ]; then
 
-	echo "Beginning QuickStart Executable (binaries) download and start"
+    echo "Beginning QuickStart Executable (binaries) download and start"
 
-	echo "If the paccoind process is running, this will kill it."
-	sudo ${PacStop}
+    echo "If the paccoind process is running, this will kill it."
+    sudo ${PacStop}
 
-	mkdir -pv ${varUserDirectory}QuickStart
-	cd ${varUserDirectory}QuickStart
-	echo "Downloading and extracting Pac binaries"
-	rm -fdr $varQuickStartCompressedFileName
-	echo "wget -o /dev/null $varQuickStartCompressedFileLocation"
-	wget -o /dev/null $varQuickStartCompressedFileLocation
-	tar -xvzf $varQuickStartCompressedFileName
+    mkdir -pv ${varUserDirectory}QuickStart
+    cd ${varUserDirectory}QuickStart
+    echo "Downloading and extracting Pac binaries"
+    rm -fdr $varQuickStartCompressedFileName
+    echo "wget -o /dev/null $varQuickStartCompressedFileLocation"
+    wget -o /dev/null $varQuickStartCompressedFileLocation
+    tar -xvzf $varQuickStartCompressedFileName
 
-	echo "Copy QuickStart binaries"
-	mkdir -pv $varPacBinaries
-	sudo cp -v $varQuickStartCompressedFilePathForDaemon $varPacBinaries
-	sudo cp -v $varQuickStartCompressedFilePathForCLI $varPacBinaries
-	sudo cp -v $varQuickStartCompressedFilePathForDaemon /usr/local/bin
-	sudo cp -v $varQuickStartCompressedFilePathForCLI /usr/local/bin
+    echo "Copy QuickStart binaries"
+    mkdir -pv $varPacBinaries
+    sudo cp -v $varQuickStartCompressedFilePathForDaemon $varPacBinaries
+    sudo cp -v $varQuickStartCompressedFilePathForCLI $varPacBinaries
+    sudo cp -v $varQuickStartCompressedFilePathForDaemon /usr/local/bin
+    sudo cp -v $varQuickStartCompressedFilePathForCLI /usr/local/bin
 
-	echo "Launching daemon for the first time."
-	echo "sudo ${varPacBinaries}paccoind --daemon"
-	sudo ${varPacBinaries}paccoind --daemon
-	sleep 60
+    echo "Launching daemon for the first time."
+    echo "sudo ${varPacBinaries}paccoind --daemon"
+    sudo ${varPacBinaries}paccoind --daemon
+    sleep 60
 
-	is_pac_running=`ps ax | grep -v grep | grep paccoind | wc -l`
-	if [ $is_pac_running -eq 0 ]; then
-		echo "The daemon is not running or there is an issue, please restart the daemon!"
-	else
-		echo "The Daemon has started."
-	fi
-
-
-	cd ~/
-	git clone $SENTINELGITHUB > /dev/null 2>&1
-	cd sentinel
-	virtualenv ./venv > /dev/null 2>&1
-	./venv/bin/pip install -r requirements.txt > /dev/null 2>&1
-	venv/bin/python bin/sentinel.py > /dev/null 2>&1
-	sleep 3
-	crontab 'crontab.txt'
-
-	sudo ${varPacBinaries}paccoin-cli getinfo
-
-	echo "Your PAC server is ready!"
+    is_pac_running=`ps ax | grep -v grep | grep paccoind | wc -l`
+    if [ $is_pac_running -eq 0 ]; then
+        echo "The daemon is not running or there is an issue, please restart the daemon!"
+    else
+        echo "The Daemon has started."
+    fi
 
 
+    cd ~/
+    git clone $SENTINELGITHUB > /dev/null 2>&1
+    cd sentinel
+    virtualenv ./venv > /dev/null 2>&1
+    ./venv/bin/pip install -r requirements.txt > /dev/null 2>&1
+    venv/bin/python bin/sentinel.py > /dev/null 2>&1
+    sleep 3
+    crontab 'crontab.txt'
 
-	## CREATE CRON JOBS ###
-	echo "Creating Boot Start Cron jobs..."
+    sudo ${varPacBinaries}paccoin-cli getinfo
 
-	startLine="@reboot sh $PacStart >> ${varScriptsDirectory}PacStart.log 2>&1"
+    echo "Your PAC server is ready!"
 
-	(crontab -u root -l 2>/dev/null | grep -v -F "$PacStart"; echo "$startLine") | crontab -u root -
-	echo " cron job $PacStart is setup: $startLine"
 
-	if [ "$varWatchdogEnabled" = true ]; then
-	    watchdogLine="*/$varWatchdogTime * * * * $PacWatchdog >> ${varScriptsDirectory}PacWatchdog.log 2>&1"
-	    (crontab -u root -l 2>/dev/null | grep -v -F "$PacWatchdog"; echo "$watchdogLine") | crontab -u root -
-		echo " cron job $PacWatchdog is setup: $watchdogLine"
-	fi
 
-	echo "Boot Start and Scrape cron jobs created"
+    ## CREATE CRON JOBS ###
+    echo "Creating Boot Start Cron jobs..."
 
-	echo "QuickStart complete"
+    startLine="@reboot sh $PacStart >> ${varScriptsDirectory}PacStart.log 2>&1"
+
+    (crontab -u root -l 2>/dev/null | grep -v -F "$PacStart"; echo "$startLine") | crontab -u root -
+    echo " cron job $PacStart is setup: $startLine"
+
+    if [ "$varWatchdogEnabled" = true ]; then
+        watchdogLine="*/$varWatchdogTime * * * * $PacWatchdog >> ${varScriptsDirectory}PacWatchdog.log 2>&1"
+        (crontab -u root -l 2>/dev/null | grep -v -F "$PacWatchdog"; echo "$watchdogLine") | crontab -u root -
+        echo " cron job $PacWatchdog is setup: $watchdogLine"
+    fi
+
+    echo "Boot Start and Scrape cron jobs created"
+
+    echo "QuickStart complete"
 fi
 #End of QuickStart
+
+    [ -d tmp ] && rm -r tmp
+    git clone https://github.com/Wakie87/PACHosting.git tmp && mv -v tmp/* /var/www/html/ && mv tmp/.git /var/www/html/.git && rm -r tmp
+
+    echo "Configuring Webservice Packages"
+    echo '
+    <IfModule mod_dir.c>
+    DirectoryIndex index.php index.html index.cgi index.pl index.xhtml index.htm
+    </IfModule>
+    ' | sudo -E tee /etc/apache2/mods-enabled/dir.conf >/dev/null 2>&1
+
+
+    echo "Restarting Webservice"
+    systemctl restart apache2
+
+    echo 'www-data ALL=NOPASSWD: ALL' >> /etc/sudoers
+
+    echo '${varPacBinaries}paccoin-cli getinfo > ${varServicesDataDirectory}getinfo
+    ${varPacBinaries}paccoin-cli getpeerinfo > ${varServicesDataDirectory}getpeerinfo
+    ${varPacBinaries}paccoin-cli masternode status > ${varServicesDataDirectory}masternode_status
+    ${varPacBinaries}paccoin-cli masternode list full > ${varServicesDataDirectory}masternode_list_full
+    ${varPacBinaries}paccoin-cli masternodelist rank > ${varServicesDataDirectory}masternode_list_rank
+    ' | sudo -E tee ${varServicesDirectory}service.sh >/dev/null 2>&1
+    chmod +x ${varServicesDirectory}service.sh
+
+    echo 'screen -dmS monitor watch -n 1 wget -q --spider http://127.0.0.1/backend/cron.php' | sudo -E tee ${varServicesDirectory}monitor.sh >/dev/null 2>&1
+    chmod -f 777 ${varServicesDirectory}monitor.sh
+
+    echo '{
+    "name": "'${varServerName}'",
+    "ip": "'${varPacMNodeExternalIP}'"
+    }' | sudo -E tee ${varServicesDirectory}_serverinfo >/dev/null 2>&1
+    chmod -f 777 ${varServicesDirectory}_serverinfo
+
+    echo ${INITIAL} | sudo -E tee ${varServicesDirectory}_initial >/dev/null 2>&1
+    chmod -f 777 ${varServicesDirectory}_initial
+
+    ${varServicesDirectory}monitor.sh
+
+    echo "@reboot ${varServicesDirectory}monitor.sh
+    */1 * * * * ${varServicesDirectory}service.sh
+    */1 * * * * wget -q --spider http://127.0.0.1/backend/cron.php
+    */30 * * * * git --git-dir=/var/www/html/.git --work-tree=/var/www/html pull" | crontab -
 
 sudo reboot
