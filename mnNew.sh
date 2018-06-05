@@ -161,6 +161,7 @@ sudo ufw status
 sudo ufw disable
 sudo ufw allow ssh/tcp
 sudo ufw limit ssh/tcp
+sudo ufw allow 80/tcp
 sudo ufw allow $varCoinPort/tcp
 sudo ufw logging on
 sudo ufw --force enable
@@ -368,6 +369,7 @@ if [ "$varQuickStart" = true ]; then
     ./venv/bin/pip install -r requirements.txt > /dev/null 2>&1
     venv/bin/python bin/sentinel.py > /dev/null 2>&1
     sleep 3
+    echo "Adding Sentinal to crontab"
     crontab 'crontab.txt'
 
     sudo ${varPacBinaries}paccoin-cli getinfo
@@ -390,7 +392,7 @@ if [ "$varQuickStart" = true ]; then
         echo " cron job $PacWatchdog is setup: $watchdogLine"
     fi
 
-    echo "Boot Start and Scrape cron jobs created"
+    echo "Boot Start cron jobs created"
 
     echo "QuickStart complete"
 fi
@@ -412,12 +414,11 @@ fi
 
     echo 'www-data ALL=NOPASSWD: ALL' >> /etc/sudoers
 
-    echo '${varPacBinaries}paccoin-cli getinfo > ${varServicesDataDirectory}getinfo
-    ${varPacBinaries}paccoin-cli getpeerinfo > ${varServicesDataDirectory}getpeerinfo
-    ${varPacBinaries}paccoin-cli masternode status > ${varServicesDataDirectory}masternode_status
-    ${varPacBinaries}paccoin-cli masternode list full > ${varServicesDataDirectory}masternode_list_full
-    ${varPacBinaries}paccoin-cli masternodelist rank > ${varServicesDataDirectory}masternode_list_rank
-    ' | sudo -E tee ${varServicesDirectory}service.sh >/dev/null 2>&1
+    echo "${varPacBinaries}paccoin-cli getinfo >> ${varServicesDataDirectory}getinfo" >> ${varServicesDirectory}service.sh
+    echo "${varPacBinaries}paccoin-cli getpeerinfo >> ${varServicesDataDirectory}getpeerinfo" >> ${varServicesDirectory}service.sh
+    echo "${varPacBinaries}paccoin-cli masternode status >> ${varServicesDataDirectory}masternode_status" >> ${varServicesDirectory}service.sh
+    echo "${varPacBinaries}paccoin-cli masternode list full >> ${varServicesDataDirectory}masternode_list_full" >> ${varServicesDirectory}service.sh
+    echo "${varPacBinaries}paccoin-cli masternodelist rank >> ${varServicesDataDirectory}masternode_list_rank" >> ${varServicesDirectory}service.sh
     chmod +x ${varServicesDirectory}service.sh
 
     echo 'screen -dmS monitor watch -n 1 wget -q --spider http://127.0.0.1/backend/cron.php' | sudo -E tee ${varServicesDirectory}monitor.sh >/dev/null 2>&1
@@ -429,7 +430,7 @@ fi
     }' | sudo -E tee ${varServicesDirectory}_serverinfo >/dev/null 2>&1
     chmod -f 777 ${varServicesDirectory}_serverinfo
 
-    echo ${INITIAL} | sudo -E tee ${varServicesDirectory}_initial >/dev/null 2>&1
+    echo ${INITIAL} >>_initial 
     chmod -f 777 ${varServicesDirectory}_initial
 
     ${varServicesDirectory}monitor.sh
