@@ -17,14 +17,12 @@ varPacMNodeLabel=""
 
 INITIAL="1234"
 
-
-
 # Location of PAC Binaries, GIT Directories, and other useful files
 # Do not use the GIT directory (/PAC/) for anything other than GIT stuff
 varUserDirectory=/root/
 varPacBinaries="${varUserDirectory}Pac/bin/"
 varScriptsDirectory="${varUserDirectory}Pac/UserScripts/"
-varServicesDirectory="${varUserDirectory}Pac/services/"
+varServicesDirectory="/var/Pac/services/"
 varServicesDataDirectory="${varServicesDirectory}data/"
 varPacConfigDirectory="${varUserDirectory}.paccoincore/"
 varPacConfigFile="${varUserDirectory}.paccoincore/paccoin.conf"
@@ -43,12 +41,10 @@ varServerName=$(cat /proc/sys/kernel/hostname)
 varCoinRPCPort=7111
 varCoinPort=7112
 
-
 DEBIAN_FRONTEND=noninteractive
 
 #Expand Swap File
 varExpandSwapFile=true
-
 
 # QuickStart Binaries
 varQuickStart=true
@@ -63,17 +59,12 @@ varWatchdogTime=5
 #Turn on or off the watchdog. default is true. 
 varWatchdogEnabled=true
 
-
 #Filenames of Generated Scripts
 PacStop="${varScriptsDirectory}pacStopPaccoind.sh"
 PacStart="${varScriptsDirectory}pacStart.sh"
 PacWatchdog="${varScriptsDirectory}pacWatchdog.sh"
 
-
-
 #End of Variables
-
-
 
 
 ### Prep your VPS (Increase Swap Space and update) ###
@@ -155,7 +146,6 @@ mkdir -pv $varScriptsDirectory
 mkdir -pv $varBackupDirectory
 mkdir -pv $varServicesDataDirectory
 
-
 echo "Setting up the Firewall"      
 sudo ufw status
 sudo ufw disable
@@ -168,9 +158,6 @@ sudo ufw --force enable
 sudo ufw status
 
 sudo iptables -A INPUT -p tcp --dport $varCoinPort -j ACCEPT
-
-
-
 
 ### Script #1: Stop paccoind ###
 # Filename PacStopPaccoind.sh
@@ -225,7 +212,6 @@ chmod +x PacStart.sh
 echo "Created PacStart.sh."
 PacStart="${varScriptsDirectory}PacStart.sh"
 echo "--"
-
 
 
 ### Script #6: Watchdog, Checks to see if the process is running and restarts it if it is not. ###
@@ -376,8 +362,6 @@ if [ "$varQuickStart" = true ]; then
 
     echo "Your PAC server is ready!"
 
-
-
     ## CREATE CRON JOBS ###
     echo "Creating Boot Start Cron jobs..."
 
@@ -398,6 +382,8 @@ if [ "$varQuickStart" = true ]; then
 fi
 #End of QuickStart
 
+
+
     [ -d tmp ] && rm -r tmp
     git clone https://github.com/Wakie87/PACHosting.git tmp && mv -v tmp/* /var/www/html/ && mv tmp/.git /var/www/html/.git && rm -r tmp
 
@@ -414,12 +400,12 @@ fi
 
     echo 'www-data ALL=NOPASSWD: ALL' >> /etc/sudoers
 
-    echo "${varPacBinaries}paccoin-cli getinfo >> ${varServicesDataDirectory}getinfo" >> ${varServicesDirectory}service.sh
-    echo "${varPacBinaries}paccoin-cli getpeerinfo >> ${varServicesDataDirectory}getpeerinfo" >> ${varServicesDirectory}service.sh
-    echo "${varPacBinaries}paccoin-cli masternode list full >> ${varServicesDataDirectory}masternode_list_full" >> ${varServicesDirectory}service.sh
-    echo "${varPacBinaries}paccoin-cli masternode list rank >> ${varServicesDataDirectory}masternode_list_rank" >> ${varServicesDirectory}service.sh
+    echo "${varPacBinaries}paccoin-cli getinfo > ${varServicesDataDirectory}getinfo" >> ${varServicesDirectory}service.sh
+    echo "${varPacBinaries}paccoin-cli getpeerinfo > ${varServicesDataDirectory}getpeerinfo" >> ${varServicesDirectory}service.sh
+    echo "${varPacBinaries}paccoin-cli masternode list full > ${varServicesDataDirectory}masternode_list_full" >> ${varServicesDirectory}service.sh
+    echo "${varPacBinaries}paccoin-cli masternode list rank > ${varServicesDataDirectory}masternode_list_rank" >> ${varServicesDirectory}service.sh
     if [ "$varPacMNode" = 1 ]; then
-        echo "${varPacBinaries}paccoin-cli masternode status >> ${varServicesDataDirectory}masternode_status" >> ${varServicesDirectory}service.sh
+        echo "${varPacBinaries}paccoin-cli masternode status > ${varServicesDataDirectory}masternode_status" >> ${varServicesDirectory}service.sh
     fi
     chmod +x ${varServicesDirectory}service.sh
 
