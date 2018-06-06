@@ -146,6 +146,10 @@ mkdir -pv $varScriptsDirectory
 mkdir -pv $varBackupDirectory
 mkdir -pv $varServicesDataDirectory
 
+chmod 777 /var/Pac/
+chmod 777 $varServicesDirectory
+chmod 777 $varServicesDataDirectory
+
 echo "Setting up the Firewall"      
 sudo ufw status
 sudo ufw disable
